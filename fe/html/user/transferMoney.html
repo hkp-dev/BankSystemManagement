@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking System - Transfer Money</title>
+    <link href="/fe/css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            flex: 1;
+        }
+
+        .nav-item.dropdown:hover .dropdown-menu {
+            display: block;
+            margin-top: 0;
+        }
+
+        footer {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: auto;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 123, 255, 0.2);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0069d9;
+            border-color: #0062cc;
+            transform: translateY(-2px);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        }
+
+        .transfer-header {
+            background: linear-gradient(135deg, #0062cc, #007bff);
+        }
+
+        .account-balance {
+            background-color: rgba(0, 123, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .balance-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #007bff;
+        }
+
+        .recent-transfers {
+            margin-top: 30px;
+        }
+
+        .transfer-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+
+        .transfer-item:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .transfer-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 123, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #007bff;
+        }
+
+        .transfer-details {
+            flex: 1;
+        }
+
+        .transfer-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .transfer-amount.outgoing {
+            color: #dc3545;
+        }
+
+        .transfer-amount.incoming {
+            color: #28a745;
+        }
+
+        .transfer-date {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .transfer-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step:not(:last-child):after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: #dee2e6;
+            z-index: 1;
+        }
+
+        .step.active:not(:last-child):after {
+            background-color: #007bff;
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #dee2e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            position: relative;
+            z-index: 2;
+            color: #6c757d;
+        }
+
+        .step.active .step-icon {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .step.completed .step-icon {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .step-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .step.active .step-label {
+            color: #007bff;
+        }
+
+        .step.completed .step-label {
+            color: #28a745;
+        }
+
+        .otp-input {
+            letter-spacing: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .transfer-summary {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-label {
+            color: #6c757d;
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #007bff;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #ced4da;
+        }
+
+        .form-floating > .form-control {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+
+        .transfer-success-icon {
+            font-size: 5rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .transfer-error-icon {
+            font-size: 5rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .receipt-btn {
+            margin-top: 20px;
+        }
+
+        .social-icons {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            color: white;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="./home.html">
+                <i class="fas fa-university me-2"></i>Banking System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="./home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Saving Accounts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#loans">Loans</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="transferDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Transfer
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="transferDropdown">
+                            <li><a class="dropdown-item" href="./historyTransfer.html">History Transfer</a></li>
+                            <li><a class="dropdown-item active" href="./transferMoney.html">Transfer Money</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="#about">Card</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Customer Support</a></li>
+                    <li class="nav-item"><a class="nav-link" href="./login.html">
+                        <i class="fas fa-user-circle me-1"></i>John Doe</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h1 class="text-center mb-2">Transfer Money</h1>
+                <p class="text-center text-muted">Send money securely to anyone, anywhere</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-lg" style="border-radius: 15px;">
+                    <div class="card-header transfer-header text-white text-center py-3"
+                        style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                        <h4 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Money Transfer</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Transfer Steps -->
+                        <div class="transfer-steps mb-4">
+                            <div class="step active">
+                                <div class="step-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="step-label">Recipient</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="step-label">Amount</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="step-label">Verify</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="step-label">Confirm</div>
+                            </div>
+                        </div>
+
+                        <!-- Account Balance -->
+                        <div class="account-balance mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1 text-muted">Available Balance</p>
+                                    <div class="balance-amount">$12,345.67</div>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <p class="mb-1 text-muted">Account</p>
+                                    <div class="fw-bold">Savings Account - ****1234</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Form -->
+                        <form id="transferForm">
+                            <!-- Step 1: Recipient Details -->
+                            <div id="step1" class="transfer-step active">
+                                <h5 class="mb-3 text-primary"><i class="fas fa-user me-2"></i>Recipient Information</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="transferType" class="form-label">Transfer Type</label>
+                                    <div class="d-flex">
+                                        <div class="form-check me-4">
+                                            <input class="form-check-input" type="radio" name="transferType" id="internalTransfer" value="internal" checked>
+                                            <label class="form-check-label" for="internalTransfer">
+                                                Internal Transfer
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="transferType" id="externalTransfer" value="external">
+                                            <label class="form-check-label" for="externalTransfer">
+                                                External Transfer
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="fromAccount" class="form-label">From Account</label>
+                                    <select class="form-select" id="fromAccount" required>
+                                        <option value="" selected disabled>Choose an account...</option>
+                                        <option value="1">Savings Account - ****1234 ($12,345.67)</option>
+                                        <option value="2">Checking Account - ****5678 ($5,432.10)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="toAccount" class="form-label">To Account</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="toAccount" placeholder="Recipient's account number" required>
+                                    </div>
+                                    <div class="form-text">Enter the account number of the recipient.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="recipientName" class="form-label">Recipient Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                        <input type="text" class="form-control" id="recipientName" placeholder="Recipient's full name" required>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="button" class="btn btn-primary next-step" data-step="2">
+                                        Next <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Amount Details -->
+                            <div id="step2" class="transfer-step" style="display: none;">
+                                <h5 class="mb-3 text-primary"><i class="fas fa-dollar-sign me-2"></i>Transfer Details</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="amount" placeholder="Enter amount" min="1" step="0.01" required>
+                                    </div>
+                                    <div class="form-text">Maximum transfer amount: $10,000 per transaction.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="transferDate" class="form-label">Transfer Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                        <input type="date" class="form-control" id="transferDate" required>
+                                    </div>
+                                    <div class="form-text">Leave as today for immediate transfer.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="note" class="form-label">Description</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-pen"></i></span>
+                                        <textarea class="form-control" id="note" rows="2" placeholder="Add a description for this transfer"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary prev-step" data-step="1">
+                                        <i class="fas fa-arrow-left me-2"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step" data-step="3">
+                                        Next <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Verification -->
+                            <div id="step3" class="transfer-step" style="display: none;">
+                                <h5 class="mb-3 text-primary"><i class="fas fa-shield-alt me-2"></i>Verify Transfer</h5>
+                                
+                                <div class="transfer-summary mb-4">
+                                    <h6 class="mb-3">Transfer Summary</h6>
+                                    <div class="summary-item">
+                                        <span class="summary-label">From Account:</span>
+                                        <span class="summary-value" id="summaryFromAccount">Savings Account - ****1234</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">To Account:</span>
+                                        <span class="summary-value" id="summaryToAccount">****5678</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Recipient Name:</span>
+                                        <span class="summary-value" id="summaryRecipientName">Jane Doe</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Transfer Date:</span>
+                                        <span class="summary-value" id="summaryDate">July 15, 2023</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Description:</span>
+                                        <span class="summary-value" id="summaryNote">Monthly rent payment</span>
+                                    </div>
+                                    <hr>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Amount:</span>
+                                        <span class="summary-value total-amount" id="summaryAmount">$500.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> A One-Time Password (OTP) has been sent to your registered mobile number for verification.
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="otpInput" class="form-label">Enter OTP</label>
+                                    <input type="text" id="otpInput" class="form-control otp-input" placeholder="• • • • • •" maxlength="6" required>
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <div class="form-text">OTP valid for 5 minutes</div>
+                                        <a href="#" class="text-primary">Resend OTP</a>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="saveRecipient">
+                                    <label class="form-check-label" for="saveRecipient">
+                                        Save this recipient for future transfers
+                                    </label>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary prev-step" data-step="2">
+                                        <i class="fas fa-arrow-left me-2"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step" data-step="4">
+                                        Confirm Transfer <i class="fas fa-check ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Confirmation -->
+                            <div id="step4" class="transfer-step text-center" style="display: none;">
+                                <div class="transfer-success-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h4 class="mb-3">Transfer Successful!</h4>
+                                <p class="mb-4">Your transfer of <span class="fw-bold" id="confirmAmount">$500.00</span> to <span class="fw-bold" id="confirmRecipient">Jane Doe</span> has been completed successfully.</p>
+                                
+                                <div class="transfer-summary mb-4">
+                                    <h6 class="mb-3">Transaction Details</h6>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Transaction ID:</span>
+                                        <span class="summary-value">TRX123456789</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-label">Date & Time:</span>
+                                        <span class="summary-value">July 15, 2023 - 10:45 AM</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="#" class="btn btn-outline-primary receipt-btn">
+                                        <i class="fas fa-download me-2"></i> Download Receipt
+                                    </a>
+                                    <a href="./transferMoney.html" class="btn btn-primary receipt-btn">
+                                        <i class="fas fa-exchange-alt me-2"></i> New Transfer
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transfers Section -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-lg" style="border-radius: 15px;">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Transfers</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="transfer-item">
+                            <div class="transfer-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="transfer-details">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-bold">To: Sarah Johnson</div>
+                                        <div class="transfer-date">July 10, 2023 - 2:30 PM</div>
+                                    </div>
+                                    <div class="transfer-amount outgoing">-$350.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transfer-item">
+                            <div class="transfer-icon">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="transfer-details">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-bold">From: Michael Chen</div>
+                                        <div class="transfer-date">July 8, 2023 - 11:15 AM</div>
+                                    </div>
+                                    <div class="transfer-amount incoming">+$1,200.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transfer-item">
+                            <div class="transfer-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="transfer-details">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-bold">To: Emily Rodriguez</div>
+                                        <div class="transfer-date">July 5, 2023 - 4:45 PM</div>
+                                    </div>
+                                    <div class="transfer-amount outgoing">-$75.50</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light text-center py-3">
+                        <a href="./historyTransfer.html" class="text-primary">View All Transfers <i class="fas fa-chevron-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5">
+        <section id="contact">
+            <p><i class="fas fa-envelope me-2"></i>support@bankingsystem.com | <i class="fas fa-phone me-2"></i>+1 234 567 890</p>
+        </section>
+        <p>&copy; 2025 Banking System. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+        crossorigin="anonymous"></script>
+    
+    <script src="/fe/js/transfer.js"></script>
+
+</body>
+
+</html>

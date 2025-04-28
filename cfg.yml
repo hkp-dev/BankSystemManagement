@@ -1,0 +1,7 @@
+mongo:
+  uri: mongodb://localhost:27017
+  db: "myapp"
+
+jwt:
+  secret_key: "TestJWTVersion-5"
+  refresh_key: "REFRESH_KEY_DEMO"

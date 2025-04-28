@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking System - Set Up 2FA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+        }
+        .card {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            transform: scale(1.05);
+        }
+        .input-field {
+            background: rgba(75, 85, 99, 0.5);
+            border: none;
+            color: #e5e7eb;
+            transition: box-shadow 0.2s ease;
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+            outline: none;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #qrCodeSection {
+            transition: opacity 0.3s ease;
+        }
+        #confirmOtpSection {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #qrCode {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card p-8 w-full max-w-md animate__animated animate__fadeInUp">
+        <div class="text-center mb-6">
+            <h1 class="logo"><i class="fas fa-university mr-2"></i>Banking System</h1>
+            <p class="text-gray-400 mt-2">Set up Two-Factor Authentication</p>
+        </div>
+        <div id="qrCodeSection">
+            <div class="mb-6 text-center">
+                <p class="text-gray-300 mb-4">Scan the QR code below with Google Authenticator:</p>
+                <img id="qrCode" src="" alt="QR Code" class="mx-auto mb-4" style="max-width: 200px;">
+                <p class="text-gray-400 text-sm">Or enter this code manually: <span id="secret" class="font-mono"></span></p>
+            </div>
+            <form id="twoFactorForm">
+                <div class="mb-6">
+                    <label for="otp" class="block text-sm text-gray-300 mb-2">One-Time Password (OTP)</label>
+                    <div class="flex items-center input-field rounded-lg">
+                        <span class="px-3 text-gray-400"><i class="fas fa-key"></i></span>
+                        <input type="text" class="input-field w-full p-3 rounded-lg" id="otp" placeholder="Enter OTP" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold">Verify OTP</button>
+            </form>
+        </div>
+        <div id="confirmOtpSection">
+            <form id="confirmOtpForm">
+                <div class="mb-6">
+                    <label for="confirmOtp" class="block text-sm text-gray-300 mb-2">Confirm OTP</label>
+                    <div class="flex items-center input-field rounded-lg">
+                        <span class="px-3 text-gray-400"><i class="fas fa-key"></i></span>
+                        <input type="text" class="input-field w-full p-3 rounded-lg" id="confirmOtp" placeholder="Enter OTP again" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold">Confirm and Enable 2FA</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let twoFactorSecret = ''; // Lưu secret từ API
+
+        async function loadTwoFactorSetup() {
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'User ID not found. Please log in again.',
+                    confirmButtonColor: '#3b82f6'
+                }).then(() => {
+                    window.location.href = '/user/login';
+                });
+                return;
+            }
+
+            try {
+                console.log('Fetching 2FA setup for userId:', userId);
+                const response = await fetch(`/api/user/2fa/setup-get?userId=${userId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('2FA setup error:', errorText);
+                    if (errorText.includes('2FA already enabled')) {
+                        await Swal.fire({
+                            icon: 'info',
+                            title: '2FA Already Enabled',
+                            text: 'Redirecting to 2FA verification...',
+                            confirmButtonColor: '#3b82f6',
+                            timer: 1500
+                        });
+                        window.location.href = '/user/2fa/verify';
+                        return;
+                    }
+                    throw new Error(errorText || 'Failed to load 2FA setup');
+                }
+                const data = await response.json();
+                console.log('2FA setup response:', data);
+                if (!data.qrCodeUrl || !data.secret) {
+                    throw new Error('Invalid response: qrCodeUrl or secret missing');
+                }
+                twoFactorSecret = data.secret; // Lưu secret
+                document.getElementById('qrCode').src = data.qrCodeUrl;
+                document.getElementById('secret').textContent = data.secret;
+            } catch (error) {
+                console.error('Load 2FA setup error:', error.message);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    confirmButtonColor: '#3b82f6'
+                }).then(() => {
+                    window.location.href = '/user/login';
+                });
+            }
+        }
+
+        document.getElementById('twoFactorForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const userId = sessionStorage.getItem('userId');
+            const otp = document.getElementById('otp').value;
+            const secKey = twoFactorSecret;
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            if (!userId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'User ID not found. Please log in again.',
+                    confirmButtonColor: '#3b82f6'
+                }).then(() => {
+                    window.location.href = '/user/login';
+                });
+                return;
+            }
+
+            if (!secKey) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '2FA secret not found. Please retry setup.',
+                    confirmButtonColor: '#3b82f6'
+                });
+                submitButton.disabled = false;
+                return;
+            }
+
+            try {
+                console.log('Submitting OTP for userId:', userId, 'OTP:', otp, 'secKey:', secKey);
+                Swal.fire({
+                    title: 'Verifying OTP...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => Swal.showLoading()
+                });
+
+                const response = await fetch('/api/user/2fa/setup-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, otp, secKey })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('OTP verification error:', errorText);
+                    throw new Error(errorText || 'OTP verification failed');
+                }
+
+                console.log('OTP verification success');
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'OTP Verified',
+                    text: 'Please enter another OTP to confirm 2FA setup.',
+                    confirmButtonColor: '#3b82f6',
+                    timer: 1500
+                });
+
+                document.getElementById('qrCodeSection').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('qrCodeSection').style.display = 'none';
+                    document.getElementById('confirmOtpSection').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('confirmOtpSection').style.opacity = '1';
+                    }, 100);
+                }, 300);
+            } catch (error) {
+                console.error('OTP verification error:', error.message);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Verification Failed',
+                    text: error.message,
+                    confirmButtonColor: '#3b82f6'
+                });
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        document.getElementById('confirmOtpForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const userId = sessionStorage.getItem('userId');
+            const otp = document.getElementById('confirmOtp').value;
+            const secKey = twoFactorSecret;
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            if (!userId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'User ID not found. Please log in again.',
+                    confirmButtonColor: '#3b82f6'
+                }).then(() => {
+                    window.location.href = '/user/login';
+                });
+                return;
+            }
+
+            if (!secKey) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '2FA secret not found. Please retry setup.',
+                    confirmButtonColor: '#3b82f6'
+                });
+                submitButton.disabled = false;
+                return;
+            }
+
+            try {
+                console.log('Submitting confirm OTP for userId:', userId, 'OTP:', otp, 'secKey:', secKey);
+                Swal.fire({
+                    title: 'Confirming OTP...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => Swal.showLoading()
+                });
+
+                const response = await fetch('/api/user/2fa/setup-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, otp, secKey })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('OTP confirmation error:', errorText);
+                    throw new Error(errorText || 'OTP confirmation failed');
+                }
+
+                console.log('OTP confirmation success');
+                await Swal.fire({
+                    icon: 'success',
+                    title: '2FA Enabled',
+                    text: 'Two-factor authentication has been set up successfully. Please enter OTP to log in.',
+                    confirmButtonColor: '#3b82f6',
+                    timer: 1500
+                });
+                window.location.href = '/user/2fa/verify';
+            } catch (error) {
+                console.error('OTP confirmation error:', error.message);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Confirmation Failed',
+                    text: error.message,
+                    confirmButtonColor: '#3b82f6'
+                });
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        loadTwoFactorSetup();
+    </script>
+</body>
+</html>

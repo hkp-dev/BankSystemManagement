@@ -31,7 +31,7 @@ func (ins *Base) Get(ctx context.Context, filter interface{}, result interface{}
 	err := ins.collection.FindOne(ctx, filter).Decode(result)
 	return err
 }
-func (ins *Base) GetAll(ctx context.Context, filter interface{}, results interface{}) error {
+func (ins *Base) GetAll(ctx context.Context, filter bson.M, results interface{}) error {
 	cursor, err := ins.collection.Find(ctx, filter)
 	if err != nil {
 		return err

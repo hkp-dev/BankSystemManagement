@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func NewAuthHandler(authService *AuthService) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (ins *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	utility.MapCor(w)
 
 	if r.Method == "OPTIONS" {
@@ -87,7 +88,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	id, err := h.authService.Register(ctx,
+	id, err := ins.authService.Register(ctx,
 		req.Identifier, req.Email, req.Password,
 		req.FirstName, req.LastName, req.PhoneNumber,
 		req.Address, req.City, req.ZipCode,
@@ -149,7 +150,7 @@ func (ins *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *AuthHandler) GetTOTPSetup(w http.ResponseWriter, r *http.Request) {
+func (ins *AuthHandler) GetTOTPSetup(w http.ResponseWriter, r *http.Request) {
 	utility.MapCor(w)
 
 	if r.Method == http.MethodOptions {
@@ -167,7 +168,7 @@ func (h *AuthHandler) GetTOTPSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qrCodeUrl, secret, err := h.authService.GetTOTPSetup(r.Context(), userID)
+	qrCodeUrl, secret, err := ins.authService.GetTOTPSetup(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -179,7 +180,7 @@ func (h *AuthHandler) GetTOTPSetup(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *AuthHandler) VerifyFirstTimeOTP(w http.ResponseWriter, r *http.Request) {
+func (ins *AuthHandler) VerifyFirstTimeOTP(w http.ResponseWriter, r *http.Request) {
 	utility.MapCor(w)
 
 	if r.Method == http.MethodOptions {
@@ -201,7 +202,7 @@ func (h *AuthHandler) VerifyFirstTimeOTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.authService.VerifyFirstTimeOTP(r.Context(), req.UserID, req.OTP, req.SecretKey); err != nil {
+	if err := ins.authService.VerifyFirstTimeOTP(r.Context(), req.UserID, req.OTP, req.SecretKey); err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
@@ -211,7 +212,7 @@ func (h *AuthHandler) VerifyFirstTimeOTP(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-func (h *AuthHandler) VerifyLoginOTP(w http.ResponseWriter, r *http.Request) {
+func (ins *AuthHandler) VerifyLoginOTP(w http.ResponseWriter, r *http.Request) {
 	utility.MapCor(w)
 
 	if r.Method == http.MethodOptions {
@@ -232,40 +233,18 @@ func (h *AuthHandler) VerifyLoginOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.authService.VerifyLoginOTP(r.Context(), req.UserID, req.OTP)
+	usrId, err := ins.authService.VerifyLoginOTP(r.Context(), req.UserID, req.OTP)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	// Set Access Token
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		MaxAge:   15 * 60, // 15 minutes
-		SameSite: http.SameSiteStrictMode,
-	})
-
-	// Set Refresh Token
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		MaxAge:   7 * 24 * 60 * 60,
-		SameSite: http.SameSiteStrictMode,
-	})
-
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Login success",
+		"userId": usrId,
 	})
 }
 
-func (c *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (ins *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// Clear the auth cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",
@@ -276,5 +255,45 @@ func (c *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Redirect to login page
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (ins *AuthHandler) GetUsrInfo(w http.ResponseWriter, r *http.Request) {
+	utility.MapCor(w)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	req := &ReqGetUsrInfo{}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		log.Printf("failed to decode request body: %v", err)
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+	if req.UserId == "" {
+		http.Error(w, "userId is required", http.StatusBadRequest)
+		return
+	}
+	fullName, email, accountNumber, balance, err := ins.authService.GetUsrInfo(r.Context(), req.UserId)
+	if err != nil {
+		log.Printf("Failed to get user info for userId %s: %v", req.UserId, err)
+		if strings.Contains(err.Error(), "user not found") {
+			http.Error(w, "User not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"fullName":      fullName,
+		"email":         email,
+		"accountNumber": accountNumber,
+		"balance":       balance,
+	})
 }

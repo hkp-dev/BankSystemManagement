@@ -18,3 +18,8 @@ type LoginRequest struct {
 	Identifier string `json:"identifier"`
 	Password   string `json:"password"`
 }
+
+type ReqGetUsrInfo struct {
+	UserId string `json:"userId"`
+}
+

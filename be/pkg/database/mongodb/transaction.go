@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -28,10 +29,14 @@ func (ins *Transaction) AddTransaction(ctx context.Context, object interface{}) 
 	return transactionId, nil
 }
 
-func (ins *Transaction) GetTransactionByUserId(ctx context.Context, identifier string) (
+func (ins *Transaction) GetTransactionByAccountNumber(ctx context.Context, AccNumber string) (
 	[]*models.Transaction, error) {
 	var trans []*models.Transaction
-	err := ins.Base.GetAll(ctx, map[string]interface{}{"userId": identifier}, &trans)
+	filter := bson.M{"$or": bson.A{
+		bson.M{"senderAccountNumber": AccNumber},
+		bson.M{"recipientAccountNumber": AccNumber},
+	}}
+	err := ins.Base.GetAll(ctx, filter, &trans)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, mongo.ErrNoDocuments

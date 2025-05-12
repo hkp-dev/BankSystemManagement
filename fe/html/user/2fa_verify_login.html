@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,7 @@
             justify-content: center;
             color: #e5e7eb;
         }
+
         .card {
             background: rgba(31, 41, 55, 0.9);
             backdrop-filter: blur(12px);
@@ -24,28 +26,34 @@
             border-radius: 16px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         .card:hover {
             transform: translateY(-8px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
         }
+
         .btn-primary {
             background: linear-gradient(90deg, #3b82f6, #2563eb);
             transition: transform 0.2s ease, background 0.3s ease;
         }
+
         .btn-primary:hover {
             background: linear-gradient(90deg, #2563eb, #1d4ed8);
             transform: scale(1.05);
         }
+
         .input-field {
             background: rgba(75, 85, 99, 0.5);
             border: none;
             color: #e5e7eb;
             transition: box-shadow 0.2s ease;
         }
+
         .input-field:focus {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
             outline: none;
         }
+
         .logo {
             font-size: 2rem;
             font-weight: bold;
@@ -55,6 +63,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="card p-8 w-full max-w-md animate__animated animate__fadeInUp">
         <div class="text-center mb-6">
@@ -66,15 +75,17 @@
                 <label for="otp" class="block text-sm text-gray-300 mb-2">One-Time Password (OTP)</label>
                 <div class="flex items-center input-field rounded-lg">
                     <span class="px-3 text-gray-400"><i class="fas fa-key"></i></span>
-                    <input type="text" class="input-field w-full p-3 rounded-lg" id="otp" placeholder="Enter OTP" required>
+                    <input type="text" class="input-field w-full p-3 rounded-lg" id="otp" placeholder="Enter OTP"
+                        required>
                 </div>
             </div>
-            <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold">Verify OTP</button>
+            <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold">Verify
+                OTP</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('twoFactorForm').addEventListener('submit', async function(event) {
+        document.getElementById('twoFactorForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             const userId = sessionStorage.getItem('userId');
             const otp = document.getElementById('otp').value;
@@ -113,20 +124,20 @@
                     throw new Error(errorText || 'OTP verification failed');
                 }
 
-                const data = await response.json();
-                if (!data.message || data.message !== 'Login success') {
-                    throw new Error('Invalid response from server');
+                const { userId: verifiedUserId } = await response.json();
+                if (!verifiedUserId) {
+                    throw new Error('Phản hồi từ server không hợp lệ');
                 }
+                sessionStorage.setItem('userId', verifiedUserId);
 
                 await Swal.fire({
                     icon: 'success',
                     title: 'OTP Verified',
-                    text: 'Redirecting to dashboard...',
+                    text: 'Redirecting to home...',
                     confirmButtonColor: '#3b82f6',
                     timer: 1500
                 });
-                sessionStorage.removeItem('userId');
-                window.location.href = '/dashboard';
+                window.location.href = '/user/home';
             } catch (error) {
                 console.error('OTP verification error:', error.message);
                 await Swal.fire({
@@ -141,4 +152,5 @@
         });
     </script>
 </body>
+
 </html>

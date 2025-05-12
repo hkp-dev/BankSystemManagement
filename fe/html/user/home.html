@@ -1,46 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none';">
     <title>Banking System - Home</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #1f2937, #111827);
-            height: 100vh;
+            min-height: 100vh;
             color: #e5e7eb;
             font-family: 'Poppins', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
             margin: 0;
             display: flex;
             flex-direction: column;
         }
+
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            padding: 1rem;
+            padding: 2rem;
         }
+
         .card {
-            background: rgba(31, 41, 55, 0.9);
+            background: rgba(31, 41, 55, 0.95);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
+            margin-bottom: 1.5rem;
         }
+
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
         }
+
         .card::before {
             content: '';
             position: absolute;
@@ -48,24 +54,31 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(255, 255, 255, 0.05));
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.15), rgba(255, 255, 255, 0.05));
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
         }
+
         .card:hover::before {
             opacity: 1;
         }
+
         .btn-primary {
             background: linear-gradient(90deg, #3b82f6, #60a5fa);
             transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
+            border-radius: 10px;
+            padding: 10px 20px;
         }
+
         .btn-primary:hover {
             background: linear-gradient(90deg, #2563eb, #1d4ed8);
             transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
         }
+
         .btn-primary::after {
             content: '';
             position: absolute;
@@ -78,10 +91,56 @@
             transform: translate(-50%, -50%);
             transition: width 0.4s ease, height 0.4s ease;
         }
+
         .btn-primary:hover::after {
             width: 200px;
             height: 200px;
         }
+
+        .time-range-btn {
+            background: rgba(75, 85, 99, 0.5);
+            color: #e5e7eb;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s ease, transform 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .time-range-btn:hover {
+            background: rgba(59, 130, 246, 0.7) !important;
+            transform: scale(1.05);
+        }
+
+        .time-range-btn.active {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            color: white;
+            font-weight: 600;
+        }
+
+        .toggle-balance-btn {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            color: white;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .toggle-balance-btn:hover {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            transform: scale(1.1);
+        }
+
         .input-field {
             background: rgba(75, 85, 99, 0.5);
             border: none;
@@ -89,49 +148,66 @@
             transition: box-shadow 0.2s ease;
             border-radius: 8px;
         }
+
         .input-field:focus {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
             outline: none;
         }
+
         .logo {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(90deg, #3b82f6, #60a5fa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .table-container {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             border-radius: 12px;
         }
+
         .table-container::-webkit-scrollbar {
             width: 8px;
         }
+
         .table-container::-webkit-scrollbar-thumb {
             background: #3b82f6;
             border-radius: 4px;
         }
+
         .table-container::-webkit-scrollbar-track {
             background: rgba(55, 65, 81, 0.5);
         }
-        .balance-toggle {
-            cursor: pointer;
-            transition: color 0.3s ease, transform 0.3s ease;
+
+        .table-row:hover {
+            background: rgba(59, 130, 246, 0.1);
+            transition: background 0.2s ease;
         }
-        .balance-toggle:hover {
-            color: #3b82f6;
-            transform: scale(1.2);
-        }
+
         .badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.8rem;
             font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        canvas {
-            max-height: 200px;
+
+        .badge.bg-green-500 {
+            background: #22c55e;
+            color: white;
         }
+
+        .badge.bg-red-500 {
+            background: #ef4444;
+            color: white;
+        }
+
+        #transactionChart {
+            max-height: 250px;
+        }
+
         .modal {
             background: rgba(31, 41, 55, 0.95);
             backdrop-filter: blur(12px);
@@ -141,34 +217,68 @@
             max-height: 80vh;
             overflow: hidden;
         }
+
         .modal-table-container {
             max-height: 60vh;
             overflow-y: auto;
         }
+
         .modal-table-container::-webkit-scrollbar {
             width: 8px;
         }
+
         .modal-table-container::-webkit-scrollbar-thumb {
             background: #3b82f6;
             border-radius: 4px;
         }
+
+        .no-data-message {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1rem;
+            padding: 2rem;
+            background: rgba(75, 85, 99, 0.2);
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
         @media (max-width: 768px) {
             .card {
-                border-radius: 12px;
+                border-radius: 16px;
+                margin-bottom: 1rem;
             }
+
             .btn-primary {
-                padding: 8px;
+                padding: 8px 16px;
                 font-size: 0.9rem;
             }
-            .logo {
-                font-size: 1.5rem;
+
+            .time-range-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
             }
+
+            .toggle-balance-btn {
+                width: 28px;
+                height: 28px;
+                padding: 4px;
+            }
+
+            .logo {
+                font-size: 1.6rem;
+            }
+
             .table-container {
-                max-height: 150px;
+                max-height: 200px;
+            }
+
+            #transactionChart {
+                max-height: 200px;
             }
         }
     </style>
 </head>
+
 <body>
     <header class="flex justify-between items-center p-4">
         <h1 class="logo"><i class="fas fa-university mr-2"></i>Banking System</h1>
@@ -179,20 +289,22 @@
                 </div>
                 <span id="userName" class="text-gray-300 font-semibold"></span>
             </div>
-            <button id="logoutBtn" class="btn-primary px-4 py-2 rounded-lg text-white font-semibold">
+            <button id="logoutBtn" class="btn-primary px-4 py-2 text-white font-semibold" aria-label="Logout">
                 <i class="fas fa-sign-out-alt mr-2"></i>Logout
             </button>
         </div>
     </header>
 
     <div class="main-content">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 flex-1">
             <!-- Balance Card -->
             <div class="card p-6 animate__animated animate__fadeInUp">
                 <h2 class="text-xl font-semibold mb-4 text-gray-100">Account Balance</h2>
                 <div class="flex items-center justify-between">
-                    <span id="balance" class="text-3xl font-bold text-blue-200">****</span>
-                    <i id="balanceToggle" class="fas fa-eye balance-toggle text-gray-400 text-lg"></i>
+                    <span id="balance" class="text-3xl font-bold text-blue-200"></span>
+                    <button class="toggle-balance-btn" title="Toggle balance visibility">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
                 </div>
                 <p class="text-gray-400 mt-2">Account: <span id="accountNumber" class="font-mono"></span></p>
             </div>
@@ -200,7 +312,12 @@
             <!-- Transaction Chart -->
             <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
                 <h2 class="text-xl font-semibold mb-4 text-gray-100">Transaction Overview</h2>
-                <canvas id="transactionChart"></canvas>
+                <div class="flex justify-center mb-4 space-x-2">
+                    <button class="time-range-btn active" data-range="week">1 Week</button>
+                    <button class="time-range-btn" data-range="month">1 Month</button>
+                    <button class="time-range-btn" data-range="quarter">3 Months</button>
+                </div>
+                <div id="transactionChart"></div>
             </div>
 
             <!-- Account Info -->
@@ -210,329 +327,523 @@
                 <p class="text-gray-300 mb-2"><strong>Email:</strong> <span id="email"></span></p>
                 <p class="text-gray-300 mb-4"><strong>Account:</strong> <span id="accountNumberInfo" class="font-mono"></span></p>
                 <div class="flex flex-col space-y-2">
-                    <a href="/transfer" class="btn-primary px-4 py-2 rounded-lg text-white font-semibold text-center">
+                    <a href="/user/transfer-money" class="btn-primary px-4 py-2 text-white font-semibold text-center">
                         <i class="fas fa-paper-plane mr-2"></i>Transfer Money
                     </a>
-                    <a href="/user/change-password" class="btn-primary px-4 py-2 rounded-lg text-white font-semibold text-center">
+                    <a href="/user/change-password" class="btn-primary px-4 py-2 text-white font-semibold text-center">
                         <i class="fas fa-lock mr-2"></i>Change Password
                     </a>
-                    <button id="historyBtn" class="btn-primary px-4 py-2 rounded-lg text-white font-semibold text-center">
-                        <i class="fas fa-history mr-2"></i>Transaction History
-                    </button>
                 </div>
             </div>
 
             <!-- Transaction Preview -->
-            <div class="card p-6 lg:col-span-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+            <div class="card p-6 lg:col-span-3 xl:col-span-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
                 <h2 class="text-xl font-semibold mb-4 text-gray-100">Recent Transactions</h2>
                 <div class="table-container">
                     <table class="w-full text-left text-gray-300 text-sm">
                         <thead class="sticky top-0 bg-gray-800/80 backdrop-blur-sm">
                             <tr class="border-b border-gray-700">
-                                <th class="py-2 px-3">Date</th>
-                                <th class="py-2 px-3">Type</th>
-                                <th class="py-2 px-3">Amount</th>
-                                <th class="py-2 px-3">Recipient</th>
-                                <th class="py-2 px-3">Description</th>
-                                <th class="py-2 px-3">Status</th>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Type</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Recipient</th>
+                                <th class="py-3 px-4">Description</th>
+                                <th class="py-3 px-4">Status</th>
                             </tr>
                         </thead>
                         <tbody id="transactionTable"></tbody>
                     </table>
+                </div>
+                <div class="flex justify-center mt-6">
+                    <button id="loadMoreBtn" class="btn-primary px-4 py-2 text-white font-semibold" aria-label="Load more transactions">
+                        Load More
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let isBalanceVisible = false;
-        let accountData = null;
-        let chartInstance = null;
+        // Debug ApexCharts and DOM loading
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            if (typeof ApexCharts === 'undefined') {
+                console.error('ApexCharts not loaded. Check CDN or network.');
+            } else {
+                console.log('ApexCharts loaded successfully');
+            }
+            // Debug time range buttons
+            const timeRangeButtons = document.querySelectorAll('.time-range-btn');
+            console.log('Initial check - Found time range buttons:', timeRangeButtons.length);
+            timeRangeButtons.forEach((btn, index) => {
+                console.log(`Button ${index}:`, btn.textContent, 'data-range:', btn.dataset.range);
+            });
+        });
 
+        class BankingSystem {
+            constructor() {
+                this.accountData = null;
+                this.chartInstance = null;
+                this.currentPage = 1;
+                this.transactionsPerPage = 20;
+                this.allTransactions = [];
+                this.displayedTransactions = [];
+                this.totalTransactions = 0;
+                this.timeRange = 'week';
+                this.isBalanceHidden = false; // Track balance visibility
+            }
 
-        // Helper to fetch with automatic auth retry/refresh
-        async function fetchWithAuthRetry(url, options = {}) {
-            let response = await fetch(url, options);
+            // Utility functions
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            }
 
-            if (response.status === 401) {
-                try {
-                    await fetch('/api/user/refresh-token', { method: 'POST' });
-                    response = await fetch(url, options);
-                } catch (error) {
-                    window.location.href = '/user/login';
+            formatDate(isoDate) {
+                return new Date(isoDate).toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            }
+
+            formatChartDate(isoDate) {
+                return new Date(isoDate).toISOString().split('T')[0];
+            }
+
+            // Toggle balance visibility
+            toggleBalance() {
+                console.log('Toggling balance visibility, current state:', this.isBalanceHidden);
+                this.isBalanceHidden = !this.isBalanceHidden;
+                const balanceEl = document.getElementById('balance');
+                const toggleBtn = document.querySelector('.toggle-balance-btn i');
+                if (this.isBalanceHidden) {
+                    balanceEl.textContent = '****';
+                    toggleBtn.classList.remove('fa-eye-slash');
+                    toggleBtn.classList.add('fa-eye');
+                } else {
+                    balanceEl.textContent = this.formatCurrency(this.accountData.balance);
+                    toggleBtn.classList.remove('fa-eye');
+                    toggleBtn.classList.add('fa-eye-slash');
                 }
             }
-            return response;
-        }
 
-        // Format số tiền
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-        }
-
-        // Format ngày
-        function formatDate(isoDate) {
-            return new Date(isoDate).toLocaleString('en-US', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-            });
-        }
-
-        // Format ngày cho chart (YYYY-MM-DD)
-        function formatChartDate(isoDate) {
-            return new Date(isoDate).toISOString().split('T')[0];
-        }
-
-        // Lấy thông tin tài khoản
-        async function loadAccountInfo() {
-            try {
-                const response = await fetchWithAuthRetry('/api/account/info', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
+            // Filter transactions by time range
+            filterTransactionsByTimeRange(transactions) {
+                console.log('Filtering transactions for timeRange:', this.timeRange);
+                const now = new Date();
+                let days;
+                switch (this.timeRange) {
+                    case 'week':
+                        days = 7;
+                        break;
+                    case 'month':
+                        days = 30;
+                        break;
+                    case 'quarter':
+                        days = 90;
+                        break;
+                    default:
+                        days = 7;
+                        console.warn('Invalid timeRange, defaulting to 7 days');
+                }
+                const cutoffDate = new Date(now.setDate(now.getDate() - days));
+                console.log('Cutoff date:', cutoffDate.toISOString());
+                const filtered = transactions.filter(tx => {
+                    const txDate = new Date(tx.date);
+                    if (isNaN(txDate.getTime())) {
+                        console.warn('Invalid transaction date:', tx.date);
+                        return false;
+                    }
+                    return txDate >= cutoffDate;
                 });
+                console.log('Filtered transactions:', filtered.length);
+                return filtered;
+            }
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Failed to load account info');
+            // Load account information
+            async loadAccountInfo() {
+                console.log('Loading account info...');
+                try {
+                    const userId = sessionStorage.getItem('userId');
+                    console.log('userId:', userId);
+                    if (!userId) {
+                        throw new Error('User ID not found. Please log in again.');
+                    }
+
+                    const response = await fetch('/api/account/info', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+
+                    console.log('Account info response status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Account info error:', errorText);
+                        throw new Error(errorText || 'Failed to load account information');
+                    }
+
+                    this.accountData = await response.json();
+                    console.log('Account data:', this.accountData);
+                    this.accountData.balance = Number(this.accountData.balance);
+                    if (isNaN(this.accountData.balance)) {
+                        throw new Error('Invalid balance data from server');
+                    }
+                    this.updateAccountUI();
+                } catch (error) {
+                    console.error('Load account info error:', error.message);
+                    this.showError(error.message, '/user/login');
+                }
+            }
+
+            // Load all transactions
+            async loadTransactions() {
+                console.log('Loading transactions...');
+                try {
+                    const userId = sessionStorage.getItem('userId');
+                    console.log('userId for transactions:', userId);
+                    if (!userId) {
+                        throw new Error('User ID not found. Please try again.');
+                    }
+
+                    const response = await fetch('/api/transactions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+
+                    console.log('Transactions response status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Transactions error:', errorText);
+                        throw new Error(errorText || 'Failed to load transactions');
+                    }
+
+                    const data = await response.json();
+                    console.log('Transactions data:', data);
+                    this.allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
+                    this.allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    this.totalTransactions = data.total || this.allTransactions.length;
+                    this.currentPage = 1;
+                    this.displayedTransactions = this.filterTransactionsByTimeRange(
+                        this.allTransactions.slice(0, this.transactionsPerPage)
+                    );
+                    this.updateTransactionTable();
+                    this.renderTransactionChart();
+                } catch (error) {
+                    console.error('Load transactions error:', error.message);
+                    this.showError(error.message);
+                }
+            }
+
+            // Update transaction table
+            updateTransactionTable() {
+                console.log('Updating transaction table with', this.displayedTransactions.length, 'transactions');
+                const tableBody = document.getElementById('transactionTable');
+                if (!tableBody) {
+                    console.error('Transaction table not found');
+                    return;
                 }
 
-                accountData = await response.json();
-                console.log('Account info:', accountData);
+                if (this.displayedTransactions.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="no-data-message">
+                                <i class="fas fa-info-circle mr-2"></i>No transactions in this period
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
 
-                document.getElementById('userName').textContent = accountData.fullName;
-                document.getElementById('fullName').textContent = accountData.fullName;
-                document.getElementById('email').textContent = accountData.email;
-                document.getElementById('accountNumber').textContent = accountData.accountNumber;
-                document.getElementById('accountNumberInfo').textContent = accountData.accountNumber;
-                document.getElementById('balance').textContent = '****';
-            } catch (error) {
-                console.error('Load account info error:', error.message);
+                const fragment = document.createDocumentFragment();
+                this.displayedTransactions.forEach(tx => {
+                    const row = document.createElement('tr');
+                    row.className = 'table-row';
+                    const amountColor = tx.direction === 'outgoing' ? 'text-red-400' : 'text-green-400';
+                    row.innerHTML = `
+                        <td class="py-3 px-4">${this.formatDate(tx.date)}</td>
+                        <td class="py-3 px-4">${tx.type || 'N/A'}</td>
+                        <td class="py-3 px-4 ${amountColor}">${this.formatCurrency(tx.amount)}</td>
+                        <td class="py-3 px-4">${tx.recipientAccountNumber || 'N/A'}</td>
+                        <td class="py-3 px-4">${tx.description || 'N/A'}</td>
+                        <td class="py-3 px-4"><span class="badge bg-${tx.status === 'Completed' ? 'green' : 'red'}-500">${tx.status || 'N/A'}</span></td>
+                    `;
+                    fragment.appendChild(row);
+                });
+                tableBody.innerHTML = '';
+                tableBody.appendChild(fragment);
+
+                const loadMoreBtn = document.getElementById('loadMoreBtn');
+                if (loadMoreBtn) {
+                    loadMoreBtn.disabled = this.displayedTransactions.length >= this.totalTransactions;
+                }
+            }
+
+            // Render transaction chart with ApexCharts
+            renderTransactionChart() {
+                console.log('Rendering transaction chart for', this.timeRange);
+                const chartContainer = document.getElementById('transactionChart');
+                if (!chartContainer) {
+                    console.error('Chart container not found');
+                    return;
+                }
+
+                if (typeof ApexCharts === 'undefined') {
+                    console.error('ApexCharts not loaded. Cannot render chart.');
+                    this.showError('Failed to load chart library. Please try again later.');
+                    return;
+                }
+
+                const filteredTransactions = this.filterTransactionsByTimeRange(this.allTransactions);
+                const dataByDate = filteredTransactions.reduce((acc, tx) => {
+                    const date = this.formatChartDate(tx.date);
+                    if (!acc[date]) {
+                        acc[date] = { incoming: 0, outgoing: 0, count: 0 };
+                    }
+                    if (tx.direction === 'incoming') {
+                        acc[date].incoming += tx.amount;
+                    } else {
+                        acc[date].outgoing += tx.amount;
+                    }
+                    acc[date].count += 1;
+                    return acc;
+                }, {});
+
+                const labels = Object.keys(dataByDate).sort();
+                const incomingAmounts = labels.map(date => dataByDate[date].incoming);
+                const outgoingAmounts = labels.map(date => dataByDate[date].outgoing);
+
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
+
+                this.chartInstance = new ApexCharts(chartContainer, {
+                    chart: {
+                        type: 'bar',
+                        height: 250,
+                        stacked: true,
+                        toolbar: { show: false },
+                        animations: {
+                            enabled: true,
+                            easing: 'easeinout',
+                            speed: 800
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '45%',
+                            borderRadius: 4
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Incoming ($)',
+                            data: incomingAmounts,
+                            color: '#22c55e'
+                        },
+                        {
+                            name: 'Outgoing ($)',
+                            data: outgoingAmounts,
+                            color: '#ef4444'
+                        }
+                    ],
+                    xaxis: {
+                        categories: labels,
+                        title: { text: 'Date', style: { color: '#e5e7eb', fontSize: '12px' } },
+                        labels: { style: { colors: '#e5e7eb', fontSize: '10px' } }
+                    },
+                    yaxis: {
+                        title: { text: 'Amount ($)', style: { color: '#e5e7eb', fontSize: '12px' } },
+                        labels: { style: { colors: '#e5e7eb', fontSize: '10px' } }
+                    },
+                    fill: {
+                        opacity: 0.8
+                    },
+                    dataLabels: { enabled: false },
+                    legend: {
+                        position: 'top',
+                        labels: { colors: '#e5e7eb', fontSize: '12px' },
+                        markers: { width: 12, height: 12 }
+                    },
+                    grid: {
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        strokeDashArray: 4
+                    },
+                    responsive: [{
+                        breakpoint: 768,
+                        options: {
+                            chart: { height: 200 },
+                            legend: { fontSize: '10px' }
+                        }
+                    }],
+                    noData: {
+                        text: 'No transactions in this period',
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        offsetY: -10,
+                        style: { color: '#9ca3af', fontSize: '14px' }
+                    }
+                });
+
+                this.chartInstance.render();
+            }
+
+            // Handle logout
+            async handleLogout() {
+                console.log('Handling logout...');
+                try {
+                    const response = await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    console.log('Logout response status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Logout error:', errorText);
+                        throw new Error(errorText || 'Logout failed');
+                    }
+
+                    sessionStorage.clear();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Logged Out',
+                        text: 'Redirecting to login...',
+                        confirmButtonColor: '#3b82f6',
+                        timer: 1500
+                    });
+                    window.location.href = '/user/login';
+                } catch (error) {
+                    console.error('Logout error:', error.message);
+                    this.showError(error.message);
+                }
+            }
+
+            // Error handling
+            showError(message, redirectUrl = null) {
+                console.log('Showing error:', message);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: error.message,
+                    text: message,
                     confirmButtonColor: '#3b82f6'
                 }).then(() => {
-                    window.location.href = '/user/login';
+                    if (redirectUrl) window.location.href = redirectUrl;
                 });
             }
-        }
 
-        // Lấy lịch sử giao dịch và vẽ chart
-        async function loadTransactions() {
-            try {
-                const response = await fetchWithAuthRetry('/api/transactions?limit=20', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+            // Initialize event listeners
+            initEventListeners() {
+                console.log('Initializing event listeners...');
+                const logoutBtn = document.getElementById('logoutBtn');
+                const loadMoreBtn = document.getElementById('loadMoreBtn');
+                const timeRangeButtons = document.querySelectorAll('.time-range-btn');
+                const toggleBalanceBtn = document.querySelector('.toggle-balance-btn');
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Failed to load transactions');
+                console.log('Found time range buttons:', timeRangeButtons.length);
+                if (timeRangeButtons.length === 0) {
+                    console.error('No time range buttons found. Check HTML structure.');
+                    setTimeout(() => {
+                        const retryButtons = document.querySelectorAll('.time-range-btn');
+                        console.log('Retry - Found time range buttons:', retryButtons.length);
+                        this.attachTimeRangeEvents(retryButtons);
+                    }, 1000);
+                } else {
+                    this.attachTimeRangeEvents(timeRangeButtons);
                 }
 
-                const transactions = await response.json();
-                console.log('Transactions:', transactions);
-
-                // Cập nhật bảng giao dịch
-                const tbody = document.getElementById('transactionTable');
-                tbody.innerHTML = '';
-                transactions.forEach(tx => {
-                    const row = document.createElement('tr');
-                    row.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
-                    row.innerHTML = `
-                        <td class="py-2 px-3">${formatDate(tx.date)}</td>
-                        <td class="py-2 px-3">${tx.type}</td>
-                        <td class="py-2 px-3">${formatCurrency(tx.amount)}</td>
-                        <td class="py-2 px-3">${tx.recipientAccount || '-'}</td>
-                        <td class="py-2 px-3">${tx.description || '-'}</td>
-                        <td class="py-2 px-3">
-                            <span class="badge ${
-                                tx.status === 'SUCCESS' ? 'bg-green-600' :
-                                tx.status === 'PENDING' ? 'bg-yellow-600' : 'bg-red-600'
-                            }">${tx.status}</span>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-                // Cập nhật modal giao dịch
-                const modalTbody = document.getElementById('modalTransactionTable');
-                if (modalTbody) {
-                    modalTbody.innerHTML = tbody.innerHTML;
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => this.handleLogout());
                 }
 
-                // Xử lý dữ liệu cho chart
-                const days = 7;
-                const today = new Date();
-                const dates = Array.from({ length: days }, (_, i) => {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() - i);
-                    return d.toISOString().split('T')[0];
-                }).reverse();
+                if (loadMoreBtn) {
+                    loadMoreBtn.addEventListener('click', () => {
+                        console.log('Load more clicked, current page:', this.currentPage);
+                        this.currentPage += 1;
+                        const start = (this.currentPage - 1) * this.transactionsPerPage;
+                        const end = start + this.transactionsPerPage;
+                        this.displayedTransactions = this.filterTransactionsByTimeRange(
+                            this.allTransactions.slice(0, end)
+                        );
+                        this.updateTransactionTable();
+                        this.renderTransactionChart();
+                    });
+                }
 
-                const sentData = new Array(days).fill(0);
-                const receivedData = new Array(days).fill(0);
+                if (toggleBalanceBtn) {
+                    toggleBalanceBtn.addEventListener('click', () => {
+                        console.log('Toggle balance button clicked');
+                        this.toggleBalance();
+                    });
+                } else {
+                    console.error('Toggle balance button not found');
+                }
+            }
 
-                transactions.forEach(tx => {
-                    const txDate = formatChartDate(tx.date);
-                    const index = dates.indexOf(txDate);
-                    if (index !== -1) {
-                        if (tx.type === 'TRANSFER_SENT') {
-                            sentData[index] += tx.amount;
-                        } else if (tx.type === 'TRANSFER_RECEIVED') {
-                            receivedData[index] += tx.amount;
+            // Helper to attach time range button events
+            attachTimeRangeEvents(buttons) {
+                buttons.forEach((btn, index) => {
+                    console.log(`Attaching event to button ${index}:`, btn.textContent, 'data-range:', btn.dataset.range);
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Time range button clicked:', btn.textContent, 'data-range:', btn.dataset.range);
+                        if (!btn.dataset.range) {
+                            console.error('Invalid data-range for button:', btn.textContent);
+                            return;
                         }
-                    }
-                });
-
-                // Vẽ chart
-                if (chartInstance) chartInstance.destroy();
-                const ctx = document.getElementById('transactionChart').getContext('2d');
-                chartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: dates.map(d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })),
-                        datasets: [
-                            {
-                                label: 'Sent',
-                                data: sentData,
-                                backgroundColor: 'rgba(239, 68, 68, 0.6)',
-                                borderColor: '#ef4444',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'Received',
-                                data: receivedData,
-                                backgroundColor: 'rgba(34, 197, 94, 0.6)',
-                                borderColor: '#22c55e',
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#e5e7eb' }
-                            },
-                            y: {
-                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                ticks: {
-                                    color: '#e5e7eb',
-                                    callback: value => `$${value}`
-                                },
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: { color: '#e5e7eb' }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(31, 41, 55, 0.9)',
-                                titleColor: '#e5e7eb',
-                                bodyColor: '#e5e7eb',
-                                callbacks: {
-                                    label: ctx => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Load transactions error:', error.message);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message,
-                    confirmButtonColor: '#3b82f6'
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.timeRange = btn.dataset.range;
+                        console.log('Updated timeRange:', this.timeRange);
+                        this.currentPage = 1;
+                        this.displayedTransactions = this.filterTransactionsByTimeRange(
+                            this.allTransactions.slice(0, this.transactionsPerPage)
+                        );
+                        this.updateTransactionTable();
+                        this.renderTransactionChart();
+                    }, { capture: true });
                 });
             }
-        }
 
-        // Toggle ẩn/hiện số dư
-        document.getElementById('balanceToggle').addEventListener('click', () => {
-            isBalanceVisible = !isBalanceVisible;
-            const balanceEl = document.getElementById('balance');
-            const toggleEl = document.getElementById('balanceToggle');
-            balanceEl.textContent = isBalanceVisible ? formatCurrency(accountData.balance) : '****';
-            toggleEl.className = `fas ${isBalanceVisible ? 'fa-eye-slash' : 'fa-eye'} balance-toggle text-gray-400 text-lg`;
-            balanceEl.style.transition = 'opacity 0.3s ease';
-            balanceEl.style.opacity = isBalanceVisible ? '1' : '0.7';
-        });
-
-        // Xử lý đăng xuất
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                const response = await fetchWithAuthRetry('/api/logout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Logout failed');
+            // Update account UI
+            updateAccountUI() {
+                console.log('Updating account UI with data:', this.accountData);
+                if (!this.accountData) {
+                    console.error('No account data to update UI');
+                    return;
                 }
-
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Logged Out',
-                    text: 'Redirecting to login...',
-                    confirmButtonColor: '#3b82f6',
-                    timer: 1500
-                });
-                window.location.href = '/user/login';
-            } catch (error) {
-                console.error('Logout error:', error.message);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Logout Failed',
-                    text: error.message,
-                    confirmButtonColor: '#3b82f6'
-                });
+                document.getElementById('userName').textContent = this.accountData.fullName || 'N/A';
+                document.getElementById('fullName').textContent = this.accountData.fullName || 'N/A';
+                document.getElementById('email').textContent = this.accountData.email || 'N/A';
+                document.getElementById('accountNumber').textContent = this.accountData.accountNumber || 'N/A';
+                sessionStorage.setItem('accountNumber', this.accountData.accountNumber);
+                document.getElementById('accountNumberInfo').textContent = this.accountData.accountNumber || 'N/A';
+                const balanceEl = document.getElementById('balance');
+                balanceEl.textContent = this.isBalanceHidden ? '****' : this.formatCurrency(this.accountData.balance);
             }
-        });
 
-        // Xử lý modal Transaction History
-        document.getElementById('historyBtn').addEventListener('click', () => {
-            Swal.fire({
-                title: 'Transaction History',
-                html: `
-                    <div class="modal-table-container">
-                        <table class="w-full text-left text-gray-300 text-sm">
-                            <thead class="sticky top-0 bg-gray-800/80 backdrop-blur-sm">
-                                <tr class="border-b border-gray-700">
-                                    <th class="py-2 px-3">Date</th>
-                                    <th class="py-2 px-3">Type</th>
-                                    <th class="py-2 px-3">Amount</th>
-                                    <th class="py-2 px-3">Recipient</th>
-                                    <th class="py-2 px-3">Description</th>
-                                    <th class="py-2 px-3">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalTransactionTable">${document.getElementById('transactionTable').innerHTML}</tbody>
-                        </table>
-                    </div>
-                `,
-                showConfirmButton: true,
-                confirmButtonText: 'Close',
-                confirmButtonColor: '#3b82f6',
-                customClass: {
-                    popup: 'modal p-6'
-                },
-                width: '80%',
-                allowOutsideClick: true
-            });
-        });
-
-        async function init() {
-            await loadAccountInfo();
-            await loadTransactions();
+            // Initialize the app
+            async init() {
+                console.log('Initializing BankingSystem...');
+                if (!sessionStorage.getItem('userId')) {
+                    console.error('No userId in sessionStorage');
+                    this.showError('Please log in', '/user/login');
+                    return;
+                }
+                await this.loadAccountInfo();
+                await this.loadTransactions();
+                this.initEventListeners();
+            }
         }
-        init();
+
+        // Initialize the banking system
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Starting initialization');
+            const bankingSystem = new BankingSystem();
+            bankingSystem.init();
+        });
     </script>
 </body>
 </html>

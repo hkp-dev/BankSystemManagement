@@ -49,6 +49,16 @@ func (ins *User) GetUserByEmail(ctx context.Context, email string) (*models.User
 	}
 	return &user, nil
 }
+func (ins *User) GetUserByAccNumber(ctx context.Context, accNumber string) (*models.User, error) {
+	var user models.User
+	if err := ins.Base.Get(ctx, map[string]interface{}{"accountNumber": accNumber}, &user); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, err
+		}
+		return nil, err
+	}
+	return &user, nil
+}
 func (ins *User) CheckUserExisting(ctx context.Context, username string) (bool, error) {
 	count, err := ins.Base.Count(ctx, map[string]interface{}{"username": username})
 	if err != nil {
@@ -105,5 +115,23 @@ func (ins *User) UpdateTOTPSecret(ctx context.Context, id, secKey string) error 
 		return err
 	}
 
+	return nil
+}
+
+func (ins *User) UpdateBalance(ctx context.Context, userId string, amount float64) error {
+	idObject, err := bson.ObjectIDFromHex(userId)
+	if err != nil {
+		return err
+	}
+	err = ins.Base.Update(ctx, map[string]interface{}{
+		"_id": idObject,
+	}, map[string]interface{}{
+		"$set": map[string]interface{}{
+			"balance": amount,
+		},
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }

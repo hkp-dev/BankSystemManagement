@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none';">
+    <title>Banking System - Verify Transaction OTP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            max-width: 448px;
+            width: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: transform 0.2s ease, background 0.3s ease;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            transform: scale(1.05);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(90deg, #6b7280, #4b5563);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-field {
+            background: rgba(75, 85, 99, 0.5);
+            border: none;
+            color: #e5e7eb;
+            transition: box-shadow 0.2s ease;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+            outline: none;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 1.5rem;
+                max-width: 90vw;
+            }
+
+            .input-field {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .btn-primary {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .logo {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card p-8 animate__animated animate__fadeInUp">
+        <div class="text-center mb-6">
+            <h1 class="logo"><i class="fas fa-university mr-2"></i>Banking System</h1>
+            <h2 class="text-xl font-semibold mt-2 text-gray-100">Verify Transaction OTP</h2>
+            <p class="text-gray-400 mt-2">Enter the 6-digit code from Google Authenticator</p>
+        </div>
+        <div class="mb-6 text-gray-300">
+            <p><strong>Recipient Account:</strong> <span id="recipientAccount">N/A</span></p>
+            <p><strong>Amount:</strong> <span id="amount">N/A</span></p>
+        </div>
+        <form id="otpForm">
+            <div class="mb-6">
+                <label for="otp" class="block text-sm text-gray-300 mb-2">One-Time Password (OTP)</label>
+                <div class="flex items-center input-field rounded-lg">
+                    <span class="px-3 text-gray-400"><i class="fas fa-key"></i></span>
+                    <input type="text" class="input-field w-full p-3 rounded-lg" id="otp" placeholder="Enter OTP"
+                        maxlength="6" inputmode="numeric" pattern="\d{6}" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold">Verify
+                OTP</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded - Verify OTP page');
+
+            const otpSystem = {
+                transferData: null,
+
+                // Utility functions
+                formatCurrency(amount) {
+                    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+                },
+
+                // Show error message
+                showError(message, redirectUrl = null) {
+                    console.log('Showing error:', message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonColor: '#3b82f6'
+                    }).then(() => {
+                        if (redirectUrl) window.location.href = redirectUrl;
+                    });
+                },
+
+                // Load transfer data
+                loadTransferData() {
+                    console.log('Loading transfer data...');
+                    const transferData = sessionStorage.getItem('transferData');
+                    if (!transferData) {
+                        console.error('No transfer data in sessionStorage');
+                        this.showError('No transfer data found', '/user/transfer');
+                        return false;
+                    }
+                    this.transferData = JSON.parse(transferData);
+                    console.log('Transfer data:', this.transferData);
+                    document.getElementById('recipientAccount').textContent = this.transferData.recipientAccountNumber || 'N/A';
+                    document.getElementById('amount').textContent = this.formatCurrency(this.transferData.amount);
+                    return true;
+                },
+
+                // Handle OTP submission
+                // Trong handleOTPSubmit
+                async handleOTPSubmit(event) {
+                    event.preventDefault();
+                    console.log('OTP form submitted');
+                    const userId = sessionStorage.getItem('userId');
+                    const otp = document.getElementById('otp').value;
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    submitButton.disabled = true;
+
+                    if (!userId) {
+                        this.showError('User ID not found. Please log in again.', '/user/login');
+                        submitButton.disabled = false;
+                        return;
+                    }
+
+                    if (!this.transferData) {
+                        this.showError('No transfer data found', '/user/transfer');
+                        submitButton.disabled = false;
+                        return;
+                    }
+
+                    try {
+                        Swal.fire({
+                            title: 'Verifying OTP...',
+                            text: 'Please wait',
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            willOpen: () => Swal.showLoading()
+                        });
+
+                        const response = await fetch('/api/verify-transaction', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: sessionStorage.getItem("userId"),
+                                senderAccountNumber: this.transferData.senderAccountNumber,
+                                recipientAccountNumber: this.transferData.recipientAccountNumber,
+                                amount: this.transferData.amount,
+                                description: this.transferData.description,
+                                otp: otp
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'OTP verification failed');
+                        }
+
+                        const result = await response.json();
+                        if (!result.transactionId) {
+                            throw new Error('Invalid transaction response');
+                        }
+                        console.log('Transfer result:', result);
+                        sessionStorage.setItem('transaction', JSON.stringify(result));
+
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'OTP Verified',
+                            text: 'Redirecting to transaction details...',
+                            confirm_ButtonColor: '#3b82f6',
+                            timer: 1500,
+                        });
+                        window.location.href = '/user/transfer-money';
+                    } catch (error) {
+                        console.error('OTP verification error:', error.message);
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Verification Failed',
+                            text: error.message,
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    } finally {
+                        submitButton.disabled = false;
+                    }
+                },
+
+                // Initialize
+                init() {
+                    console.log('Initializing OTPSystem...');
+                    if (!sessionStorage.getItem('userId')) {
+                        console.error('No userId in sessionStorage');
+                        this.showError('Please log in', '/user/login');
+                        return;
+                    }
+                    if (!this.loadTransferData()) return;
+
+                    const otpForm = document.getElementById('otpForm');
+                    if (otpForm) {
+                        otpForm.addEventListener('submit', (e) => this.handleOTPSubmit(e));
+                    } else {
+                        console.error('OTP form not found');
+                    }
+                }
+            };
+
+            otpSystem.init();
+        });
+    </script>
+</body>
+
+</html>

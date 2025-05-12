@@ -47,21 +47,19 @@ type User struct {
 	Status        Status        `bson:"status" json:"status"`
 	Role          Role          `bson:"role" json:"role"`
 	TermsAccepted bool          `bson:"termsAccepted" json:"termsAccepted"`
+	Balance       float64       `bson:"balance" json:"balance"`
+	AccountNumber string        `bson:"accountNumber" json:"accountNumber"`
 	CreatedAt     time.Time     `bson:"createdAt" json:"createdAt"`
 	UpdatedAt     time.Time     `bson:"updatedAt" json:"updatedAt"`
-
-	TOTPSecret string `bson:"totpSecret,omitempty" json:"-"`
+	TOTPSecret    string        `bson:"totpSecret,omitempty" json:"-"`
 }
 
 type Transaction struct {
-	ID               bson.ObjectID     `bson:"_id" json:"id"`
-	UserID           bson.ObjectID     `bson:"userId" json:"userId"`
-	Date             time.Time         `bson:"date" json:"date"`
-	Type             TransactionType   `bson:"type" json:"type"`
-	Amount           float64           `bson:"amount" json:"amount"`
-	RecipientAccount *string           `bson:"recipientAccount" json:"recipientAccount"`
-	Description      *string           `bson:"description" json:"description"`
-	Status           TransactionStatus `bson:"status" json:"status"`
-	CreatedAt        time.Time         `bson:"createdAt" json:"createdAt"`
-	UpdatedAt        time.Time         `bson:"updatedAt" json:"updatedAt"`
+	ID                     bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	SenderAccountNumber    string        `bson:"senderAccountNumber" json:"senderAccountNumber"`
+	RecipientAccountNumber string        `bson:"recipientAccountNumber" json:"recipientAccountNumber"`
+	Date                   time.Time     `bson:"date" json:"date"`
+	Amount                 float64       `bson:"amount" json:"amount"`
+	Description            string        `bson:"description,omitempty" json:"description,omitempty"`
+	CreateAt               time.Time     `bson:"create_at" json:"createAt"`
 }

@@ -89,7 +89,7 @@ func (ins *User) UpdatePwd(ctx context.Context, id string, newPwd string) error 
 	if err != nil {
 		return err
 	}
-	err = ins.Base.Update(ctx, map[string]interface{}{"_id": idObject}, map[string]interface{}{"$set": map[string]interface{}{"password": newPwd}})
+	err = ins.Base.Update(ctx, map[string]interface{}{"_id": idObject}, map[string]interface{}{"$set": map[string]interface{}{"passwordHash": newPwd}})
 	if err != nil {
 		return err
 	}

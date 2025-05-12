@@ -23,3 +23,9 @@ type ReqGetUsrInfo struct {
 	UserId string `json:"userId"`
 }
 
+type ReqChangePwd struct {
+	UserId string `json:"userId"`
+	Otp    string `json:"otp"`
+	OldPwd string `json:"oldPassword"`
+	NewPwd string `json:"newPassword"`
+}

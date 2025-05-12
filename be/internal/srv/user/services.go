@@ -200,3 +200,17 @@ func (ins *AuthService) GetUsrInfo(ctx context.Context, userId string) (fullName
 	balance = user.Balance
 	return
 }
+
+func (ins *AuthService) ChangePassword(ctx context.Context, userId, otp, oldPwd, newPwd string) (err error) {
+	user, err := ins.appHub.DbcUser.GetUserById(ctx, userId)
+	if err != nil {
+		return fmt.Errorf("user not found: %w", err)
+	}
+	if !totp.Validate(otp, user.TOTPSecret) {
+		return fmt.Errorf("invalid OTP code")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPwd)); err != nil {
+		return fmt.Errorf("old password is invalid: %w", err)
+	}
+	return ins.appHub.DbcUser.UpdatePwd(ctx, userId, newPwd)
+}

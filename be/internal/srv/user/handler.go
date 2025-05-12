@@ -297,3 +297,30 @@ func (ins *AuthHandler) GetUsrInfo(w http.ResponseWriter, r *http.Request) {
 		"balance":       balance,
 	})
 }
+
+func (ins *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	utility.MapCor(w)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	req := &ReqChangePwd{}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		log.Printf("failed to decode request body: %v", err)
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+	err := ins.authService.ChangePassword(r.Context(), req.UserId, req.Otp, req.OldPwd, req.NewPwd)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "change password successfully",
+	})
+}

@@ -27,6 +27,7 @@ func main() {
 	http.HandleFunc("/api/account/info", authHandler.GetUsrInfo)
 	http.HandleFunc("/api/transactions", transHandler.GetTransactions)
 	http.HandleFunc("/api/verify-transaction", transHandler.PostTransaction)
+	http.HandleFunc("/api/verify-changePwd", authHandler.ChangePassword)
 	// Page handlers
 	http.HandleFunc("/user/login", serveTemplate("../fe/html/user/login.html"))
 	http.HandleFunc("/user/register", serveTemplate("../fe/html/user/register.html"))
@@ -35,6 +36,8 @@ func main() {
 	http.HandleFunc("/user/home", serveTemplate("../fe/html/user/home.html"))
 	http.HandleFunc("/user/verify-otp-transaction", serveTemplate("../fe/html/user/2fa_verify_transaction.html"))
 	http.HandleFunc("/user/transfer-money", serveTemplate("../fe/html/user/transferMoney.html"))
+	http.HandleFunc("/user/change-password", serveTemplate("../fe/html/user/changePassword.html"))
+	http.HandleFunc("/user/verify-otp-changePwd", serveTemplate("../fe/html/user/2fa_verify_changePassword.html"))
 
 	fs := http.FileServer(http.Dir("fe"))
 	http.Handle("/fe/", http.StripPrefix("/fe/", fs))

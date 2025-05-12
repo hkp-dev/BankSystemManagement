@@ -58,7 +58,6 @@ type Transaction struct {
 	ID                     bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	SenderAccountNumber    string        `bson:"senderAccountNumber" json:"senderAccountNumber"`
 	RecipientAccountNumber string        `bson:"recipientAccountNumber" json:"recipientAccountNumber"`
-	Date                   time.Time     `bson:"date" json:"date"`
 	Amount                 float64       `bson:"amount" json:"amount"`
 	Description            string        `bson:"description,omitempty" json:"description,omitempty"`
 	CreateAt               time.Time     `bson:"create_at" json:"createAt"`

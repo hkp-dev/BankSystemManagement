@@ -186,24 +186,6 @@
             transition: background 0.2s ease;
         }
 
-        .badge {
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .badge.bg-green-500 {
-            background: #22c55e;
-            color: white;
-        }
-
-        .badge.bg-red-500 {
-            background: #ef4444;
-            color: white;
-        }
-
         #transactionChart {
             max-height: 250px;
         }
@@ -344,11 +326,10 @@
                         <thead class="sticky top-0 bg-gray-800/80 backdrop-blur-sm">
                             <tr class="border-b border-gray-700">
                                 <th class="py-3 px-4">Date</th>
-                                <th class="py-3 px-4">Type</th>
                                 <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Sender</th>
                                 <th class="py-3 px-4">Recipient</th>
                                 <th class="py-3 px-4">Description</th>
-                                <th class="py-3 px-4">Status</th>
                             </tr>
                         </thead>
                         <tbody id="transactionTable"></tbody>
@@ -448,14 +429,14 @@
                 const cutoffDate = new Date(now.setDate(now.getDate() - days));
                 console.log('Cutoff date:', cutoffDate.toISOString());
                 const filtered = transactions.filter(tx => {
-                    const txDate = new Date(tx.date);
+                    const txDate = new Date(tx.createAt);
                     if (isNaN(txDate.getTime())) {
-                        console.warn('Invalid transaction date:', tx.date);
+                        console.warn('Invalid transaction createAt, skipping:', tx);
                         return false;
                     }
                     return txDate >= cutoffDate;
                 });
-                console.log('Filtered transactions:', filtered.length);
+                console.log('Filtered transactions:', filtered.length, filtered);
                 return filtered;
             }
 
@@ -519,14 +500,17 @@
                     }
 
                     const data = await response.json();
-                    console.log('Transactions data:', data);
+                    console.log('Raw transactions data:', data);
                     this.allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
-                    this.allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    console.log('Parsed transactions:', this.allTransactions);
+                    this.allTransactions.sort((a, b) => new Date(b.createAt) - new Date(a.createAt));
                     this.totalTransactions = data.total || this.allTransactions.length;
+                    console.log('Total transactions:', this.totalTransactions);
                     this.currentPage = 1;
                     this.displayedTransactions = this.filterTransactionsByTimeRange(
                         this.allTransactions.slice(0, this.transactionsPerPage)
                     );
+                    console.log('Displayed transactions:', this.displayedTransactions);
                     this.updateTransactionTable();
                     this.renderTransactionChart();
                 } catch (error) {
@@ -547,7 +531,7 @@
                 if (this.displayedTransactions.length === 0) {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="6" class="no-data-message">
+                            <td colspan="5" class="no-data-message">
                                 <i class="fas fa-info-circle mr-2"></i>No transactions in this period
                             </td>
                         </tr>
@@ -559,14 +543,14 @@
                 this.displayedTransactions.forEach(tx => {
                     const row = document.createElement('tr');
                     row.className = 'table-row';
-                    const amountColor = tx.direction === 'outgoing' ? 'text-red-400' : 'text-green-400';
+                    const isOutgoing = tx.senderAccountNumber === this.accountData.accountNumber;
+                    const amountColor = isOutgoing ? 'text-red-400' : 'text-green-400';
                     row.innerHTML = `
-                        <td class="py-3 px-4">${this.formatDate(tx.date)}</td>
-                        <td class="py-3 px-4">${tx.type || 'N/A'}</td>
+                        <td class="py-3 px-4">${this.formatDate(tx.createAt)}</td>
                         <td class="py-3 px-4 ${amountColor}">${this.formatCurrency(tx.amount)}</td>
+                        <td class="py-3 px-4">${tx.senderAccountNumber || 'N/A'}</td>
                         <td class="py-3 px-4">${tx.recipientAccountNumber || 'N/A'}</td>
                         <td class="py-3 px-4">${tx.description || 'N/A'}</td>
-                        <td class="py-3 px-4"><span class="badge bg-${tx.status === 'Completed' ? 'green' : 'red'}-500">${tx.status || 'N/A'}</span></td>
                     `;
                     fragment.appendChild(row);
                 });
@@ -596,14 +580,15 @@
 
                 const filteredTransactions = this.filterTransactionsByTimeRange(this.allTransactions);
                 const dataByDate = filteredTransactions.reduce((acc, tx) => {
-                    const date = this.formatChartDate(tx.date);
+                    const date = this.formatChartDate(tx.createAt);
                     if (!acc[date]) {
                         acc[date] = { incoming: 0, outgoing: 0, count: 0 };
                     }
-                    if (tx.direction === 'incoming') {
-                        acc[date].incoming += tx.amount;
-                    } else {
+                    const isOutgoing = tx.senderAccountNumber === this.accountData.accountNumber;
+                    if (isOutgoing) {
                         acc[date].outgoing += tx.amount;
+                    } else {
+                        acc[date].incoming += tx.amount;
                     }
                     acc[date].count += 1;
                     return acc;
@@ -846,4 +831,5 @@
         });
     </script>
 </body>
+
 </html>

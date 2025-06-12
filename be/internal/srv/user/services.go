@@ -212,5 +212,10 @@ func (ins *AuthService) ChangePassword(ctx context.Context, userId, otp, oldPwd,
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPwd)); err != nil {
 		return fmt.Errorf("old password is invalid: %w", err)
 	}
-	return ins.appHub.DbcUser.UpdatePwd(ctx, userId, newPwd)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPwd), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		return
+	}
+	return ins.appHub.DbcUser.UpdatePwd(ctx, userId, string(hashedPassword))
 }

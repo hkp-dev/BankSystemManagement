@@ -28,7 +28,8 @@ func main() {
 	http.HandleFunc("/api/transactions", transHandler.GetTransactions)
 	http.HandleFunc("/api/verify-transaction", transHandler.PostTransaction)
 	http.HandleFunc("/api/verify-changePwd", authHandler.ChangePassword)
-	// Page handlers
+
+
 	http.HandleFunc("/user/login", serveTemplate("../fe/html/user/login.html"))
 	http.HandleFunc("/user/register", serveTemplate("../fe/html/user/register.html"))
 	http.HandleFunc("/user/2fa/setup", serveTemplate("../fe/html/user/2fa_setup.html"))
@@ -41,7 +42,6 @@ func main() {
 
 	fs := http.FileServer(http.Dir("fe"))
 	http.Handle("/fe/", http.StripPrefix("/fe/", fs))
-	// Page handlers
 	log.Println("Server is running on: http://localhost:8080/user/login")
 	http.ListenAndServe(":8080", nil)
 }
